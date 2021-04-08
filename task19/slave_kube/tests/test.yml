@@ -1,0 +1,6 @@
+---
+- hosts: master
+  remote_user: ec2-user
+  become: True
+  roles:
+    - slave_kube
