@@ -2,27 +2,11 @@
 # tasks file for K8s-master
 - debug:
         msg: "Configuring the master node.."
-- name: "Configuring repository for docker"
-  yum_repository:
-               name: "docker"
-               description: "yum repo for docker"
-               baseurl: "https://download.docker.com/linux/centos/7/x86_64/stable/"
-               gpgcheck: no
-  when: false
-- name: "Installing containerd.io"
-  package:
-                 name: "https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.4.3-3.1.el7.x86_64.rpm"
-                 state: present
-                 disable_gpg_check: True
-  when: false
 - name: "Installing docker"
   package:
             name: "docker"
             state: present
-- name: "Disabling SElinux"
-  selinux:
-            state: disabled
-  when: false
+
 - name: "Starting and enabling docker service permanently"
   service:
             name: "docker"
@@ -77,13 +61,7 @@
   package:
             name: "iproute-tc"
             state: present
-- name: "Configuring network"
-  copy:
-            dest: "/etc/sysctl.d/k8s.conf"
-            content:
-                - "net.bridge.bridge-nf-call-ip6tables = 1"
-                - "net.bridge.bridge-nf-call-iptables = 1"
-  when: false
+
 - name: appending systcl file
   shell: "cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf \n net.bridge.bridge-nf-call-ip6tables = 1 \n net.bridge.bridge-nf-call-iptables = 1"
 - name: "Starting sysctl service"
@@ -109,20 +87,14 @@
 - name: "Changing permissions"
   shell: "export KUBECONFIG=/etc/kubernetes/admin.conf"
 - debug:
-        msg: "Voila! Your system is configured as a master node :)"
+        msg: "Your system is configured as a master node :)"
 - name: "Printing the join command for worker nodes"
   shell: "kubeadm token create --print-join-command"
   register: token
-- name: "Below is the join command for the worker nodes"
-  debug:
-      msg: "{{ token['stdout'] }}"
-  when: false
+
 - name: print token
   debug:
       var: token
-- name: A helpful reminder of what to look out for post-update
-  pause:
-        prompt: "Make sure that you copied the join command correctly, press enter to continue .."
-  when: false
+
 - name: Copy join command to local file
   local_action: copy content="{{ token.stdout_lines[0] }}" dest="./join-command" 
