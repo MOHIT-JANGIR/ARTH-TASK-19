@@ -32,11 +32,7 @@
         - kubelet
         - kubeadm
         - kubectl
-- name: "Starting and enabling kubelet service permanently"
-  service:
-            name: "kubelet"
-            state: started
-            enabled: yes
+
 - name: "Pulling docker images"
   command: "kubeadm config images pull"
 - name: "Changing the driver to systemd"
@@ -45,14 +41,7 @@
             content: '{
                       "exec-opts": ["native.cgroupdriver=systemd"]
                       }'
-- name: Remove swapfile from /etc/fstab
-  mount:
-       name: "{{ item }}"
-       fstype: swap
-       state: absent
-  with_items:
-       - swap
-       - none
+
 - name: "Restarting docker service"
   service:
             name: "docker"
@@ -70,7 +59,7 @@
   service:
        name: kubelet
        daemon_reload: yes
-       state: restarted
+       state: started
        enabled: yes
 - name: "Initializing kubeadm and ignoring RAM and CPU errors"
   command: "sudo kubeadm init --pod-network-cidr=10.240.0.0/16 --ignore-preflight-errors=NumCPU --ignore-preflight-errors=Mem"
